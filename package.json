@@ -1,15 +1,16 @@
 {
   "name": "chartink-telegram-webhook",
   "version": "1.0.0",
-  "description": "Webhook to send Chartink alerts to Telegram",
+  "description": "Webhook receiver for Chartink alerts, sends Telegram notifications",
   "main": "index.js",
   "dependencies": {
     "express": "^4.17.1",
-    "axios": "^0.21.1"
+    "body-parser": "^1.19.0",
+    "node-fetch": "^2.6.1"
   },
   "scripts": {
     "start": "node index.js"
   },
-  "author": "Your Name",
+  "author": "",
   "license": "ISC"
 }
