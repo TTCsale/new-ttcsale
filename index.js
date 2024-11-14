@@ -1,35 +1,48 @@
-const express = require('express');
+const express = require("express");
+const bodyParser = require("body-parser");
+const fetch = require("node-fetch");
+
 const app = express();
-const axios = require('axios');
+const PORT = 3000;
 
-app.use(express.json()); // to parse incoming JSON requests
+// Your Telegram bot token and chat ID
+const TELEGRAM_TOKEN = '7410108739:AAFpcexuuiNZYd3ZDzgIGPXBKJFGoCMIOeE';
+const CHAT_ID = '5090735114';
 
-// Set up the route for receiving Chartink webhook alerts
-app.post('/webhook', (req, res) => {
-    const data = req.body;
+// Middleware to parse incoming JSON data
+app.use(bodyParser.json());
 
-    // Your Telegram bot token and chat ID
-    const telegramToken = '7410108739:AAFpcexuuiNZYd3ZDzgIGPXBKJFGoCMIOeE';
-    const chatId = '5090735114';
+app.post("/webhook", (req, res) => {
+  // Log the incoming request data to check the structure
+  console.log("Incoming Data: ", req.body);
 
-    // Prepare the message to send to Telegram
-    const message = `Stock Alert: ${data.ticker} triggered an alert!`;
-
-    // Send the message to Telegram using the Telegram Bot API
-    axios.post(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
-        chat_id: chatId,
-        text: message
-    })
-    .then(response => {
-        res.status(200).send('Alert sent to Telegram!');
-    })
-    .catch(error => {
-        res.status(500).send('Error sending alert');
-    });
+  // Ensure the request contains both ticker and price
+  const { ticker, price } = req.body;
+  
+  // Check if both ticker and price are defined
+  if (ticker && price) {
+    sendTelegramMessage(ticker, price);
+    res.status(200).send("Alert received");
+  } else {
+    res.status(400).send("Invalid data");
+  }
 });
 
-// Set the server to listen on port 3000 (or any other port you want)
-const PORT = process.env.PORT || 3000;
+// Function to send the message to Telegram
+function sendTelegramMessage(ticker, price) {
+  const message = `Stock Alert: ${ticker} - ${price}`;
+
+  // Telegram API endpoint
+  const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(message)}`;
+
+  // Send the message to Telegram
+  fetch(url)
+    .then(response => response.json())
+    .then(data => console.log('Message sent: ', data))
+    .catch(error => console.error('Error sending message: ', error));
+}
+
+// Start the server
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
